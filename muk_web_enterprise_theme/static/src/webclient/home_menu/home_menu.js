@@ -11,7 +11,7 @@ patch(HomeMenu.prototype, {
         super.setup();
         if (
     		cookie.get("color_scheme") == "dark" &&
-    		user.activeCompany.has_background_image_dark 
+    		user.activeCompany.has_background_image_dark
     	) {
         	this.backgroundImageUrl = url('/web/image', {
                 model: 'res.company',
@@ -29,10 +29,12 @@ patch(HomeMenu.prototype, {
             });
         }
         onMounted(() => {
-            document.body.classList.toggle(
-                'o_home_menu_background_custom',
-                this.backgroundImageUrl
-            );
+            if (this.backgroundImageUrl) {
+                document.body.classList.toggle(
+                    'o_home_menu_background_custom',
+                    this.backgroundImageUrl
+                );
+            }
         });
         onWillUnmount(() => {
             document.body.classList.remove(

@@ -7,13 +7,13 @@ from odoo.exceptions import ValidationError
 
 
 class ProductProduct(models.Model):
-    
+
     _inherit = 'product.product'
 
     #----------------------------------------------------------
     # Fields
     #----------------------------------------------------------
-    
+
     fixed_price = fields.Float(
         string="Variant Price",
         digits='Product Price',
@@ -30,12 +30,12 @@ class ProductProduct(models.Model):
     #----------------------------------------------------------
     # Override Fields
     #----------------------------------------------------------
-    
+
     default_code = fields.Char(
         tracking=True,
         copy=False,
     )
-    
+
     barcode = fields.Char(
         tracking=True,
         copy=False,
@@ -44,11 +44,11 @@ class ProductProduct(models.Model):
     # ----------------------------------------------------------
     # Index
     # ----------------------------------------------------------
-    
-    _unique_default_code = models.UniqueIndex(
-        "(default_code) WHERE default_code IS NOT NULL",
-        "Another entry with the same default code already exists.",
-    )
+
+    # _unique_default_code = models.UniqueIndex(
+    #     "(default_code) WHERE default_code IS NOT NULL",
+    #     "Another entry with the same default code already exists.",
+    # )
 
     _unique_barcode = models.UniqueIndex(
         "(barcode) WHERE barcode IS NOT NULL",
@@ -93,8 +93,8 @@ class ProductProduct(models.Model):
     def _search_display_name(self, operator, value):
         res = super()._search_display_name(operator, value)
         combine = (
-            Domain.OR 
-            if not operator in Domain.NEGATIVE_OPERATORS 
+            Domain.OR
+            if not operator in Domain.NEGATIVE_OPERATORS
             else Domain.AND
         )
         return combine([res, [('manufacturer_code', operator, value)]])

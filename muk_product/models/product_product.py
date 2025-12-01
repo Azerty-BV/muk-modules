@@ -50,10 +50,10 @@ class ProductProduct(models.Model):
     #     "Another entry with the same default code already exists.",
     # )
 
-    _unique_barcode = models.UniqueIndex(
-        "(barcode) WHERE barcode IS NOT NULL",
-        "Another entry with the same barcode already exists.",
-    )
+    # _unique_barcode = models.UniqueIndex(
+    #     "(barcode) WHERE barcode IS NOT NULL",
+    #     "Another entry with the same barcode already exists.",
+    # )
 
     # ----------------------------------------------------------
     # Helper

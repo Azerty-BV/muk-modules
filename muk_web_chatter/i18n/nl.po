@@ -23,7 +23,7 @@ msgstr "Onder"
 #. module: muk_web_chatter
 #: model:ir.model.fields,field_description:muk_web_chatter.field_res_users__chatter_position
 msgid "Chatter Position"
-msgstr "Babbelpositie"
+msgstr "Babbelaarpositie"
 
 #. module: muk_web_chatter
 #: model:ir.model.fields,field_description:muk_web_chatter.field_ir_http__display_name

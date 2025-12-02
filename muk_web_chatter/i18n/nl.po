@@ -45,13 +45,13 @@ msgstr "ID"
 #. module: muk_web_chatter
 #. odoo-javascript
 #: code:addons/muk_web_chatter/static/src/chatter/chatter.xml:0
-msgid "Send Message"
+msgid "Send message"
 msgstr "Bericht"
 
 #. module: muk_web_chatter
 #. odoo-javascript
 #: code:addons/muk_web_chatter/static/src/chatter/chatter.xml:0
-msgid "Log Note"
+msgid "Log note"
 msgstr "Notitie"
 
 #. module: muk_web_chatter

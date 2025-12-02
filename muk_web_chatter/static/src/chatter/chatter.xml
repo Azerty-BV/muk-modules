@@ -21,7 +21,7 @@
                 t-on-click="() => this.toggleComposer('message')"
             >
                 <i t-if="env.isSmall" class="fa fa-envelope me-sm-1" />
-                <span class="d-none d-sm-inline">Message</span>
+                <span class="d-none d-sm-inline">Send Message</span>
             </button>
         </xpath>
         <xpath expr="//button[hasclass('o-mail-Chatter-logNote')]" position="replace">
@@ -38,7 +38,7 @@
                 t-on-click="() => this.toggleComposer('note')"
             >
                 <i t-if="env.isSmall" class="fa fa-sticky-note me-sm-1" />
-                <span class="d-none d-sm-inline">Note</span>
+                <span class="d-none d-sm-inline">Log Note</span>
             </button>
         </xpath>
         <xpath expr="//button[hasclass('o-mail-Chatter-activity')]/span" position="before">

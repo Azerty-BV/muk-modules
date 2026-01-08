@@ -6,58 +6,41 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_res_partner_filter"/>
         <field name="arch" type="xml">
-        	<xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="filter_domain">
-					[
-						'|',
-						'|',
-						'|',
-						'|',
-						'|',
-						('complete_name', 'ilike', self),
-						('ref', '=', self),
-						('email', 'ilike', self),
-						('vat', 'ilike', self),
-						('company_registry', 'ilike', self),
-						('contact_number', 'ilike', self),
-					]
-				</attribute>
-            </xpath>
 			<xpath expr="//field[@name='user_id']" position="after">
 				<separator/>
 				<filter
-					string="Main Contacts"
+					string="Hoofdcontacten"
 					name="filter_top_level"
 					domain="['|', ('parent_id', '=', False), ('is_company', '=', True)]"
 				/>
 			</xpath>
 			<xpath expr="//filter[@name='inactive']" position="after">
-                <filter 
-					string="All Contacts" 
-					name="all" 
+                <filter
+					string="Alle Contacten"
+					name="all"
 					domain="['|', ('active', '=', False), ('active', '=', True)]"
 				/>
 				<separator/>
-                <filter 
-					string="Portal Users" 
-					name="all" 
+                <filter
+					string="Portaal Gebruikers"
+					name="all"
 					domain="[('partner_share', '=', True), ('user_ids', '!=', False)]"
 				/>
-                <filter 
-					string="Internal Users" 
-					name="all" 
+                <filter
+					string="Interne Gebruikers"
+					name="all"
 					domain="[('partner_share', '=', False), ('user_ids', '!=', False)]"
 				/>
 			</xpath>
 			<xpath expr="//group" position="after">
                 <searchpanel>
-                    <field 
-                        name="company_id" 
-                        groups="base.group_multi_company" 
+                    <field
+                        name="company_id"
+                        groups="base.group_multi_company"
                         icon="fa-building"
                     />
                     <field name="country_id" icon="fa fa-globe"/>
-                    <field 
+                    <field
                         name="category_id"
                         string="Tags"
                         icon="fa-tags"
@@ -67,7 +50,7 @@
             </xpath>
         </field>
     </record>
-    
+
     <record id="view_partner_list" model="ir.ui.view">
 	    <field name="name">res.partner.list</field>
         <field name="model">res.partner</field>
@@ -81,35 +64,34 @@
 				<attribute name="decoration-warning">(type == 'other')</attribute>
 			</xpath>
 	        <xpath expr="//field[@name='complete_name']" position="before">
-				<field 
-					name="company_type" 
+				<field
+					name="company_type"
 					nolabel="1"
-					widget="selection_icons" 
+					widget="selection_icons"
 					options="{'icons': {'person': 'user', 'company': 'building'}}"
 					invisible="type != 'contact'"
-					optional="show" 
+					optional="show"
 				/>
-				<field 
-					name="type" 
+				<field
+					name="type"
 					nolabel="1"
-					widget="selection_icons" 
+					widget="selection_icons"
 					options="{'icons': {'contact': 'address-book', 'invoice': 'usd', 'delivery': 'truck', 'other': 'address-book-o'}}"
-					optional="show" 
+					optional="show"
 				/>
-				<field 
-					name="linked_user_state" 
+				<field
+					name="linked_user_state"
 					nolabel="1"
-					widget="selection_icons" 
+					widget="selection_icons"
 					options="{'icons': {'portal': 'shopping-basket', 'internal': 'briefcase'}}"
-					optional="hide" 
+					optional="hide"
 				/>
-				<field 
-					name="comment" 
+				<field
+					name="comment"
 					nolabel="1"
-					widget="text_icon" 
-					optional="show" 
+					widget="text_icon"
+					optional="show"
 				/>
-				<field name="contact_number" optional="show" />
 				<field name="commercial_company_name" string="Company" optional="show" />
 			</xpath>
             <xpath expr="//field[@name='complete_name']" position="attributes">
@@ -126,25 +108,7 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form" />
         <field name="arch" type="xml">
-            <xpath expr="//span[@name='address_name']" position="before">
-            	<label for="contact_number" invisible="parent_id" />
-            	<div class="o_row align-items-center" invisible="parent_id">
-					<field 
-						name="contact_number" 
-						placeholder="is filled in automatically"
-						class="w-100"
-					/>
-					<button 
-						name="action_generate_contact_number" 
-						type="object"
-						icon="fa-plus-circle" 
-						class="oe_link oe_inline oe_edit_only ml-1"
-						style="vertical-align: baseline;" 
-						title="Generate Contact Number"
-						invisible="contact_number or parent_id" 
-					/>
-            	</div>
-            </xpath>
+
 			<xpath expr="//group[@name='misc']" position="before">
 				<group string="Default Address">
 					<field name="default_invoice_partner_id" string="Invoice"/>
@@ -157,11 +121,11 @@
             <xpath expr="//field[@name='child_ids']" position="inside">
 				<list decoration-bf="is_company">
 					<field name="is_company" column_invisible="1"/>
-                    <field 
-						name="avatar_128" 
-						widget="image" 
-						options="{'size': [24, 24], 'img_class': 'o_avatar rounded'}" 
-						width="30" 
+                    <field
+						name="avatar_128"
+						widget="image"
+						options="{'size': [24, 24], 'img_class': 'o_avatar rounded'}"
+						width="30"
 						nolabel="1"
 					/>
 					<field name="name"/>
@@ -172,17 +136,17 @@
 					<field name="city" optional="show"/>
 					<field name="country_id" optional="hide"/>
 					<field
-						name="type" 
+						name="type"
 						widget="badge"
 						decoration-info="type == 'delivery'"
 						decoration-success="type == 'invoice'"
 						decoration-warning="type == 'other'"
 					/>
-					<button 
-						name="action_view_partner" 
-						class="btn btn-link text-primary" 
-						type="object" 
-						string="Open View"  
+					<button
+						name="action_view_partner"
+						class="btn btn-link text-primary"
+						type="object"
+						string="Open View"
 					/>
 				</list>
             </xpath>

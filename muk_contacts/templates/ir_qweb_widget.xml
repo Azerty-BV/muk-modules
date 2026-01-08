@@ -11,13 +11,13 @@
         </xpath>
     </template>
 
-    <template id="contact" inherit_id="base.contact">
+    <!-- <template id="contact" inherit_id="base.contact">
         <xpath expr="//span[@t-esc='vat']/.." position="before">
 			<div t-if="object.contact_number and 'contact_number' in fields" class="py-1">
-				<span>Ref:</span> 
+				<span>Ref:</span>
 				<span itemprop="contactNumber" t-esc="object.contact_number"/>
 			</div>
         </xpath>
-    </template>
+    </template> -->
 
 </odoo>

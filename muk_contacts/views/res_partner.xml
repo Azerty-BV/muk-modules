@@ -92,6 +92,7 @@
 					widget="text_icon"
 					optional="show"
 				/>
+				<field name="ref" optional="show" />
 				<field name="commercial_company_name" string="Company" optional="show" />
 			</xpath>
             <xpath expr="//field[@name='complete_name']" position="attributes">

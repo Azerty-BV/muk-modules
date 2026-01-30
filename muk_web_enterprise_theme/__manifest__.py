@@ -1,13 +1,13 @@
 {
-    'name': 'MuK Backend Theme', 
+    'name': 'MuK Backend Theme',
     'summary': 'Odoo Enterprise Backend Theme',
     'description': '''
-        This module offers a mobile compatible design for Odoo Enterprise. 
+        This module offers a mobile compatible design for Odoo Enterprise.
         Furthermore it allows the user to define some design preferences.
     ''',
     'version': '19.0.1.4.3',
-    'category': 'Themes/Backend', 
-    'license': 'LGPL-3', 
+    'category': 'Themes/Backend',
+    'license': 'LGPL-3',
     'author': 'MuK IT',
     'website': 'http://www.mukit.at',
     'live_test_url': 'https://my.mukit.at/r/f6m',
@@ -21,7 +21,7 @@
         'muk_web_dialog',
         'muk_web_appsbar',
         'muk_web_colors',
-        'muk_web_refresh',
+        # 'muk_web_refresh',
     ],
     'data': [
         'templates/web_layout.xml',
@@ -30,13 +30,13 @@
     'assets': {
         'web._assets_primary_variables': [
             (
-                'before', 
-                'muk_web_colors/static/src/scss/colors.scss', 
+                'before',
+                'muk_web_colors/static/src/scss/colors.scss',
                 'muk_web_enterprise_theme/static/src/scss/colors_light.scss'
             ),
             (
-                'after', 
-                'web/static/src/scss/primary_variables.scss', 
+                'after',
+                'web/static/src/scss/primary_variables.scss',
                 'muk_web_enterprise_theme/static/src/scss/variables.scss'
             ),
         ],
@@ -48,8 +48,8 @@
         ],
         "web.assets_web_dark": [
             (
-                'after', 
-                'muk_web_colors/static/src/scss/colors.scss', 
+                'after',
+                'muk_web_colors/static/src/scss/colors.scss',
                 'muk_web_enterprise_theme/static/src/scss/colors_dark.scss'
             ),
             'muk_web_enterprise_theme/static/src/**/*.dark.scss',

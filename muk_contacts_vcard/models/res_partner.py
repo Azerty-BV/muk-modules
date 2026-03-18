@@ -31,6 +31,7 @@ class Partner(models.Model):
         inverse='_inverse_name',
         readonly=False,
         store=True,
+        precompute=True,
     )
 
     firstname = fields.Char(
@@ -161,20 +162,24 @@ class Partner(models.Model):
 
     @api.model
     def _split_name(self, name, is_company=False):
-        for record in self:
-            if is_company or not name:
-                return name or False, False
-            parts = name.split(' ')
-            if len(parts) > 1:
-                return ' '.join(parts[1:]), parts[0]
-            return name, False
+        if is_company or not name:
+            return name or False, False
+        parts = name.split(' ')
+        if len(parts) > 1:
+            return ' '.join(parts[1:]), parts[0]
+        return name, False
+
+    def _fields_sync(self, values):
+        self.flush_recordset()
+        return super()._fields_sync(values)
 
     def _get_complete_name(self):
         complete_name = super()._get_complete_name()
-        if self.env.context.get('partner_display_name_show_honorific'):
+        if self.name and self.env.context.get('partner_display_name_show_honorific'):
             prefix = ' '.join(self.mapped('honorific_prefix_ids.shortcut'))
             suffix = ' '.join(self.mapped('honorific_suffix_ids.shortcut'))
-            complete_name = f"{prefix} {complete_name} {suffix}"
+            decorated = ' '.join(filter(None, [prefix, self.name, suffix]))
+            complete_name = complete_name.replace(self.name, decorated, 1)
         return complete_name.strip()
         
     def _ensure_vcard_uid(self):
@@ -272,16 +277,16 @@ class Partner(models.Model):
             lastname, firstname = self._split_name(
                 (record.name or '').strip(), record.is_company
             )
-            record.write({
-                'firstname': firstname,
-                'middlename': False,
-                'lastname': lastname,
-            })
+            record.firstname = firstname
+            record.middlename = False
+            record.lastname = lastname
 
     @api.depends(
         'type',
         'name',
         'is_company', 
+        'honorific_prefix_ids', 
+        'honorific_suffix_ids', 
         'honorific_prefix_ids.name',
         'honorific_suffix_ids.name',
     )

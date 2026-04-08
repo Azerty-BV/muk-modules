@@ -17,18 +17,18 @@
 			<xpath expr="//filter[@name='inactive']" position="after">
                 <filter
 					string="Alle Contacten"
-					name="all"
+					name="all_contacts"
 					domain="['|', ('active', '=', False), ('active', '=', True)]"
 				/>
 				<separator/>
                 <filter
 					string="Portaal Gebruikers"
-					name="all"
+					name="portal_users"
 					domain="[('partner_share', '=', True), ('user_ids', '!=', False)]"
 				/>
                 <filter
 					string="Interne Gebruikers"
-					name="all"
+					name="internal_users"
 					domain="[('partner_share', '=', False), ('user_ids', '!=', False)]"
 				/>
 			</xpath>

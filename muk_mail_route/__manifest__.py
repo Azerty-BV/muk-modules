@@ -5,12 +5,12 @@
         This module collects mails that could not be routed 
         and allows them to be assigned subsequently.
     ''',
-    'version': '19.0.1.1.1',
+    'version': '19.0.1.1.2',
     'category': 'Productivity/Mail',
     'license': 'LGPL-3', 
     'author': 'MuK IT',
     'website': 'http://www.mukit.at',
-    'live_test_url': 'https://my.mukit.at/r/f6m',
+    'live_test_url': 'https://youtu.be/bG-65TUdz-Q',
     'contributors': [
         'Mathias Markl <mathias.markl@mukit.at>',
     ],

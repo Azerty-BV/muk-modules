@@ -7,12 +7,12 @@
         AI agents and crawlers can discover your content via /llms.txt
         and request any page as clean markdown via the Accept header.
     ''',
-    'version': '19.0.1.0.2',
+    'version': '19.0.1.0.3',
     'category': 'Website/SEO',
     'license': 'LGPL-3',
     'author': 'MuK IT',
     'website': 'http://www.mukit.at',
-    'live_test_url': 'https://my.mukit.at/r/f6m',
+    'live_test_url': 'https://youtu.be/k111jogE3LA',
     'contributors': [
         'Mathias Markl <mathias.markl@mukit.at>',
     ],

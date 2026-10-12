@@ -1,8 +1,11 @@
-from odoo import models, fields, api, _
+from __future__ import annotations
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
 class Partner(models.Model):
+    """Extend ``res.partner`` with contact numbers and address defaults."""
 
     _inherit = 'res.partner'
     # _rec_names_search = [
@@ -31,7 +34,7 @@ class Partner(models.Model):
         comodel_name='res.users',
         string="Linked User",
         readonly=True,
-        store=False
+        store=False,
     )
 
     linked_user_state = fields.Selection(
@@ -40,17 +43,17 @@ class Partner(models.Model):
             ('portal', 'Portal'),
             ('internal', 'Internal'),
         ],
-        string="Linked User State"
+        string='Linked User State',
     )
 
     default_invoice_partner_id = fields.Many2one(
         comodel_name='res.partner',
-        string="Default Invoice Address",
+        string='Default Invoice Address',
     )
 
     default_delivery_partner_id = fields.Many2one(
         comodel_name='res.partner',
-        string="Default Delivery Address",
+        string='Default Delivery Address',
     )
 
     # ----------------------------------------------------------
@@ -87,7 +90,8 @@ class Partner(models.Model):
     # Functions
     # ----------------------------------------------------------
 
-    def address_get(self, adr_pref=None):
+    def address_get(self, adr_pref: list[str] | None = None) -> dict[str, int]:
+        """Resolve addresses, preferring the configured invoice/delivery defaults."""
         res = super().address_get(adr_pref=adr_pref)
         adr_pref = set(adr_pref or [])
         if self.default_invoice_partner_id and 'invoice' in adr_pref:
@@ -96,7 +100,7 @@ class Partner(models.Model):
             res['delivery'] = self.default_delivery_partner_id.id
         return res
 
-    #----------------------------------------------------------
+    # ----------------------------------------------------------
     # Actions
     #----------------------------------------------------------
 
@@ -109,7 +113,7 @@ class Partner(models.Model):
             'res_model': 'res.partner',
             'res_id': self.id,
             'views': [(self.env.ref('base.view_partner_form').id, 'form')],
-            'context': self.env.context
+            'context': self.env.context,
         }
 
     # def action_generate_contact_number(self):
@@ -122,7 +126,7 @@ class Partner(models.Model):
 
     #----------------------------------------------------------
     # Compute
-    #----------------------------------------------------------
+    # ----------------------------------------------------------
 
     # @api.depends('contact_number')
     # @api.depends_context('show_contact_number')
@@ -136,29 +140,55 @@ class Partner(models.Model):
     #                 else f"[{record.contact_number}] {record.display_name}"
     #             )
 
-    def _search_linked_user_id(self, operator, value):
+    def _search_linked_user_id(self, operator: str, value) -> list:
+        """Map a ``linked_user_id`` search onto the ``user_ids`` relation."""
         return [('user_ids', operator, value)]
 
     @api.depends('user_ids')
-    def _compute_linked_user_id(self):
+    def _compute_linked_user_id(self) -> None:
+        """Expose the first linked user, including archived ones."""
         for record in self.with_context(active_test=False):
-            record.linked_user_id = (
-                record.user_ids[0] if record.user_ids else False
-            )
+            record.linked_user_id = record.user_ids[0] if record.user_ids else False
 
     @api.depends('linked_user_id', 'linked_user_id.share')
-    def compute_linked_user_state(self):
+    def compute_linked_user_state(self) -> None:
+        """Derive whether the linked user is internal or portal."""
         self.linked_user_state = None
         for record in self.filtered('linked_user_id'):
             record.linked_user_state = (
-                'internal'
-                if record.linked_user_id._is_internal()
-                else 'portal'
+                'internal' if record.linked_user_id._is_internal() else 'portal'
             )
 
-    #----------------------------------------------------------
+    # ----------------------------------------------------------
     # ORM
-    #----------------------------------------------------------
+    # ----------------------------------------------------------
+
+    @api.model
+    @api.readonly
+    def web_name_search(
+        self,
+        name: str,
+        specification: dict,
+        domain: list | None = None,
+        operator: str = 'ilike',
+        limit: int = 100,
+    ) -> list[dict]:
+        """Augment name-search results with partner type icons."""
+        result = super().web_name_search(name, specification, domain, operator, limit)
+        if isinstance(result, list):
+            partners = self.browse(
+                [values['id'] for values in result if values.get('id')]
+            )
+            icon_vals = {
+                partner.id: (partner.company_type, partner.type) for partner in partners
+            }
+            for values in result:
+                company_type, partner_type = icon_vals.get(
+                    values.get('id'), (False, False)
+                )
+                values.setdefault('company_type', company_type)
+                values.setdefault('type', partner_type)
+        return result
 
     # @api.model_create_multi
     # def create(self, vals_list):

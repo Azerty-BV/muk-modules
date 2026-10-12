@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 import hashlib
+import secrets
+from typing import Any
+
+import psycopg2
 
 from odoo import api, fields, models
 from odoo.tools import SQL
@@ -8,9 +14,11 @@ from odoo.addons.muk_mcp.tools.rate_limit import rate_limiter
 
 
 class MCPKey(models.Model):
+    """Hashed MCP API key with per-key scope and rate limit."""
 
     _name = 'muk_mcp.key'
-    _description = "MCP API Key"
+    _description = 'MCP API Key'
+    _allow_sudo_commands = False
     _auto = False
 
     # ----------------------------------------------------------
@@ -18,25 +26,25 @@ class MCPKey(models.Model):
     # ----------------------------------------------------------
 
     name = fields.Char(
-        string="Label",
+        string='Label',
         required=True,
     )
 
     key_hash = fields.Char(
-        string="Key Hash",
+        string='Key Hash',
         readonly=True,
         index=True,
     )
 
     key_prefix = fields.Char(
-        string="Key Prefix",
+        string='Key Prefix',
         readonly=True,
-        help="First 8 characters of the key for identification.",
+        help='First 8 characters of the key for identification.',
     )
 
     user_id = fields.Many2one(
         comodel_name='res.users',
-        string="User",
+        string='User',
         required=True,
         default=lambda self: self.env.user,
         index=True,
@@ -45,32 +53,32 @@ class MCPKey(models.Model):
 
     scope = fields.Selection(
         selection=[
-            ('read', "Read Only"),
-            ('write', "Read & Write"),
+            ('read', 'Read Only'),
+            ('write', 'Read & Write'),
         ],
-        string="Scope",
+        string='Scope',
         required=True,
         default='write',
     )
 
     rate_limit = fields.Integer(
-        string="Rate Limit (req/min)",
+        string='Rate Limit (req/min)',
         default=60,
-        help="Maximum requests per minute. 0 = unlimited.",
+        help='Maximum requests per minute. 0 = unlimited.',
     )
 
     active = fields.Boolean(
-        string="Active",
+        string='Active',
         default=True,
     )
 
     last_used = fields.Datetime(
-        string="Last Used",
+        string='Last Used',
         readonly=True,
     )
 
     create_date = fields.Datetime(
-        string="Created",
+        string='Created',
         readonly=True,
     )
 
@@ -78,9 +86,11 @@ class MCPKey(models.Model):
     # Setup
     # ----------------------------------------------------------
 
-    def init(self):
-        self.env.cr.execute(SQL(
-            """
+    def init(self) -> None:
+        """Create the backing SQL table and key-hash index for this _auto=False model."""
+        self.env.cr.execute(
+            SQL(
+                """
             CREATE TABLE IF NOT EXISTS %s (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR NOT NULL,
@@ -97,57 +107,130 @@ class MCPKey(models.Model):
                 write_uid INTEGER REFERENCES res_users(id) ON DELETE SET NULL
             )
             """,
-            SQL.identifier(self._table),
-        ))
-        self.env.cr.execute(SQL(
-            "CREATE INDEX IF NOT EXISTS %s ON %s (key_hash)",
-            SQL.identifier(f'{self._table}_key_hash_idx'),
-            SQL.identifier(self._table),
-        ))
+                SQL.identifier(self._table),
+            ),
+        )
+        self.env.cr.execute(
+            SQL(
+                'CREATE INDEX IF NOT EXISTS %s ON %s (key_hash)',
+                SQL.identifier(f'{self._table}_key_hash_idx'),
+                SQL.identifier(self._table),
+            ),
+        )
 
     # ----------------------------------------------------------
     # Helper
     # ----------------------------------------------------------
 
     @staticmethod
-    def _hash_key(key):
+    def _hash_key(key: str) -> str:
+        """Return the SHA-256 hex digest used to store and look up an API key."""
         return hashlib.sha256(key.encode()).hexdigest()
 
-    def _check_rate_limit(self):
+    def _check_rate_limit(self) -> bool:
+        """Return whether this key is within its per-minute request budget.
+
+        The bucket is keyed by database as well as key id: the rate limiter is a
+        process-global singleton, so two databases served by the same Odoo
+        process would otherwise share one window for the same key id.
+        """
         return rate_limiter.check(
-            self.id, self.rate_limit, 60,
+            (self.env.cr.dbname, self.id),
+            self.rate_limit,
+            60,
         )
+
+    @api.model
+    def _authenticate_user_condition(self) -> SQL:
+        """Return the SQL predicate the key's owning user ``u`` must satisfy.
+
+        Requires an active user, as core ``_check_apikey_credentials`` does;
+        override it to accept keys of intentionally inactive service users.
+        """
+        return SQL('u.active = true')
 
     # ----------------------------------------------------------
     # Functions
     # ----------------------------------------------------------
 
     @api.model
-    def authenticate(self, token):
+    def generate_playground_key(
+        self,
+        name: str | None = None,
+        scope: str = 'write',
+    ) -> dict[str, Any]:
+        """Create a key for the current user and return it with the plaintext.
+
+        :return: key metadata including the one-time ``plaintext`` value
+        """
+        rate_limit = int(
+            self.env['ir.config_parameter']
+            .sudo()
+            .get_param(
+                'muk_mcp.rate_limit_requests',
+                60,
+            ),
+        )
+        raw_key = secrets.token_urlsafe(32)
+        record = self.sudo().create(
+            {
+                'name': name or 'Playground',
+                'user_id': self.env.uid,
+                'key_hash': self._hash_key(raw_key),
+                'key_prefix': raw_key[:8],
+                'scope': scope,
+                'rate_limit': rate_limit,
+            },
+        )
+        return {
+            'id': record.id,
+            'name': record.name,
+            'key_prefix': record.key_prefix,
+            'scope': record.scope,
+            'rate_limit': record.rate_limit,
+            'plaintext': raw_key,
+        }
+
+    @api.model
+    def authenticate(self, token: str) -> MCPKey | None:
+        """Resolve a bearer token to its active key and stamp its last use.
+
+        The owner must satisfy :meth:`_authenticate_user_condition`; the stamp is
+        written at most once a minute and skips a key another request is stamping.
+        Return the matching key, or ``None`` when no eligible key matches.
+        """
+        self.env['res.users'].flush_model(['active'])
+        self.flush_model(['key_hash', 'active', 'user_id'])
         table = SQL.identifier(self._table)
-        self.env.cr.execute(SQL(
-            """
-            SELECT id FROM %s
-            WHERE key_hash = %s AND active = true
+        self.env.cr.execute(
+            SQL(
+                """
+            SELECT k.id FROM %s k
+            JOIN res_users u ON u.id = k.user_id
+            WHERE k.key_hash = %s AND k.active = true AND %s
             LIMIT 1
             """,
-            table,
-            self._hash_key(token),
-        ))
+                table,
+                self._hash_key(token),
+                self._authenticate_user_condition(),
+            ),
+        )
         row = self.env.cr.fetchone()
         if not row:
             return None
         try:
             with mute_logger('odoo.sql_db'), self.env.cr.savepoint():
-                self.env.cr.execute(SQL(
-                    """
-                    UPDATE %s
-                    SET last_used = NOW() AT TIME ZONE 'UTC'
-                    WHERE id = %s
-                    """,
-                    table,
-                    row[0],
-                ))
-        except Exception:
+                self.env.cr.execute(
+                    SQL(
+                        "UPDATE %(table)s SET last_used = NOW() AT TIME ZONE 'UTC' "
+                        'WHERE id IN (SELECT id FROM %(table)s WHERE id = %(id)s '
+                        'AND (last_used IS NULL OR last_used < '
+                        "NOW() AT TIME ZONE 'UTC' - INTERVAL '1 minute') "
+                        'FOR NO KEY UPDATE SKIP LOCKED)',
+                        table=table,
+                        id=row[0],
+                    ),
+                )
+        except psycopg2.Error:
             pass
         return self.sudo().browse(row[0])

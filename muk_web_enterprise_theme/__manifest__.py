@@ -1,11 +1,11 @@
 {
     'name': 'MuK Backend Theme',
     'summary': 'Odoo Enterprise Backend Theme',
-    'description': '''
+    'description': """
         This module offers a mobile compatible design for Odoo Enterprise.
         Furthermore it allows the user to define some design preferences.
-    ''',
-    'version': '19.0.1.4.5',
+    """,
+    'version': '19.0.1.4.11',
     'category': 'Themes/Backend',
     'license': 'LGPL-3',
     'author': 'MuK IT',
@@ -32,35 +32,36 @@
             (
                 'before',
                 'muk_web_colors/static/src/scss/colors.scss',
-                'muk_web_enterprise_theme/static/src/scss/colors_light.scss'
+                'muk_web_enterprise_theme/static/src/scss/colors_light.scss',
             ),
             (
                 'after',
                 'web/static/src/scss/primary_variables.scss',
-                'muk_web_enterprise_theme/static/src/scss/variables.scss'
+                'muk_web_enterprise_theme/static/src/scss/variables.scss',
             ),
         ],
         'web.assets_backend': [
             'muk_web_enterprise_theme/static/src/webclient/**/*.xml',
             'muk_web_enterprise_theme/static/src/webclient/**/*.js',
+            'muk_web_enterprise_theme/static/src/webclient/**/*.scss',
             'muk_web_enterprise_theme/static/src/views/**/*.scss',
             ('remove', 'muk_web_enterprise_theme/static/src/**/*.dark.scss'),
         ],
         'web.assets_unit_tests': [
             'muk_web_enterprise_theme/static/tests/**/*.test.js',
         ],
-        "web.assets_web_dark": [
+        'web.assets_web_dark': [
             (
                 'after',
                 'muk_web_colors/static/src/scss/colors.scss',
-                'muk_web_enterprise_theme/static/src/scss/colors_dark.scss'
+                'muk_web_enterprise_theme/static/src/scss/colors_dark.scss',
             ),
             'muk_web_enterprise_theme/static/src/**/*.dark.scss',
         ],
     },
     'images': [
         'static/description/banner.png',
-        'static/description/theme_screenshot.png'
+        'static/description/theme_screenshot.png',
     ],
     'installable': True,
     'application': False,

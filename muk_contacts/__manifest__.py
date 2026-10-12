@@ -1,11 +1,11 @@
 {
     'name': 'MuK Contacts',
     'summary': 'Improves the contact app',
-    'description': '''
+    'description': """
         This module improves and extends the contact app
         and the related partner model.
-    ''',
-    'version': '19.0.1.1.4',
+    """,
+    'version': '19.0.1.1.17',
     'category': 'Sales/CRM',
     'license': 'LGPL-3',
     'author': 'MuK IT',
@@ -24,6 +24,18 @@
         'templates/ir_qweb_widget.xml',
         'views/res_partner.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            (
+                'after',
+                'web/static/src/views/fields/relational_utils.js',
+                'muk_contacts/static/src/js/partner_many2one.js',
+            ),
+        ],
+        'web.assets_unit_tests': [
+            'muk_contacts/static/tests/**/*',
+        ],
+    },
     'images': [
         'static/description/banner.png',
     ],

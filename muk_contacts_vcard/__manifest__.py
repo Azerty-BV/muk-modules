@@ -1,13 +1,13 @@
 {
-    'name': 'MuK Contacts vCard', 
+    'name': 'MuK Contacts vCard',
     'summary': 'Extends the vCard export with extra fields',
-    'description': '''
-        This module extends the vCard export to include more detailed 
+    'description': """
+        This module extends the vCard export to include more detailed
         contact information. Furthermore, it improves the contact view.
-    ''',
-    'version': '19.0.1.1.4',
+    """,
+    'version': '19.0.1.1.24',
     'category': 'Sales/CRM',
-    'license': 'LGPL-3', 
+    'license': 'LGPL-3',
     'author': 'MuK IT',
     'website': 'http://www.mukit.at',
     'live_test_url': 'https://youtu.be/j_iZRgJnOGk',
@@ -17,6 +17,7 @@
     'depends': [
         'base_vat',
         'muk_contacts',
+        'phone_validation',
     ],
     'data': [
         'security/ir.model.access.csv',
